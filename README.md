@@ -12,7 +12,7 @@
 - [前往软件下载页面](https://github.com/Hgnim/KeyInputMacro/releases/latest)
 
 ## 使用帮助
-- [查看帮助文档](https://github.com/Hgnim/KeyInputMacro/wiki/KeyInputMacro-Help)
+- [查看帮助文档](https://github.com/Hgnim/KeyInputMacro/wiki/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3)
 
 ## 注意事项
 - 该软件为免费开源软件，禁止任何形式的商用。
