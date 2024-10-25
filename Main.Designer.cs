@@ -255,14 +255,14 @@ namespace KeyInputMacro
             // Main_ToolStrip_help_helpDoc
             // 
             Main_ToolStrip_help_helpDoc.Name = "Main_ToolStrip_help_helpDoc";
-            Main_ToolStrip_help_helpDoc.Size = new Size(180, 22);
+            Main_ToolStrip_help_helpDoc.Size = new Size(124, 22);
             Main_ToolStrip_help_helpDoc.Text = "帮助文档";
             Main_ToolStrip_help_helpDoc.Click += Main_ToolStrip_help_helpDoc_Click;
             // 
             // Main_ToolStrip_help_about
             // 
             Main_ToolStrip_help_about.Name = "Main_ToolStrip_help_about";
-            Main_ToolStrip_help_about.Size = new Size(180, 22);
+            Main_ToolStrip_help_about.Size = new Size(124, 22);
             Main_ToolStrip_help_about.Text = "关于";
             Main_ToolStrip_help_about.Click += Main_ToolStrip_help_about_Click;
             // 

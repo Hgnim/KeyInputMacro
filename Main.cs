@@ -444,7 +444,7 @@ Github: https://github.com/Hgnim/KeyInputMacro",
 
         private void Main_ToolStrip_help_helpDoc_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("explorer.exe", "https://github.com/Hgnim/KeyInputMacro/wiki/KeyInputMacro-Help");
+            System.Diagnostics.Process.Start("explorer.exe", "https://github.com/Hgnim/KeyInputMacro/wiki/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3");
         }
     }
 }
