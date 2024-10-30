@@ -13,6 +13,8 @@
 
 ## 使用帮助
 - [查看帮助文档](https://github.com/Hgnim/KeyInputMacro/wiki/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3)
+- [最新版本更新内容](update_log/latest_version.md)
+- [历史版本更新内容](update_log/old_version.md)
 
 ## 注意事项
 - 该软件为免费开源软件，禁止任何形式的商用。
