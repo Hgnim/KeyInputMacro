@@ -17,11 +17,12 @@ namespace KeyInputMacro
             InitializeComponent();
         }
 
-        private void LogWindow_Load(object sender, EventArgs e)
+        private void LogWindow_Shown(object sender, EventArgs e)
         {
             foreach (string log in Logger.logs)
             {
                 LogList.Items.Add(log);
+                Application.DoEvents();
             }
             Logger.LogUpdateToUI += LogUpdateToUI;
             LogListAutoScroll();
@@ -60,8 +61,11 @@ namespace KeyInputMacro
         /// <param name="message">日志内容</param>
         public static void LogAdd(string message)
         {
-            logs.Add(GetTime() + message);            
-                LogUpdateToUI?.Invoke(logs[^1]);//如果委托不为null，则调用。参数为数组的最后一位            
+            Thread t = new(() =>
+            {            
+               logs.Add(GetTime() + message);            
+                LogUpdateToUI?.Invoke(logs[^1]);//如果委托不为null，则调用。参数为数组的最后一位
+            });t.Start();//日志编写另起线程进行
         }
         static string GetTime()
         {

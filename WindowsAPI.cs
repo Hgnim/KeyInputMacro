@@ -1,7 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.Eventing.Reader;
+using System.Runtime.InteropServices;
 using System.Text;
 
+#pragma warning disable IDE0130
 namespace WindowsAPI
+#pragma warning restore IDE0130
 {
     public static class GetWindows
     {
@@ -185,6 +188,17 @@ namespace WindowsAPI
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
+        /// <summary>
+        /// 创建一个值，用作消息中的 lParam 参数。 宏连接指定的值。
+        /// </summary>
+        /// <param name="LoWord">低序字指定光标的x坐标</param>
+        /// <param name="HiWord">高序字指定光标的y坐标</param>
+        /// <returns></returns>
+        private static IntPtr MakeLParam(int LoWord, int HiWord)
+        {
+            //from https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-makelparam
+            return (IntPtr)((HiWord << 16) | (LoWord & 0xffff));
+        }
 
         //文档 https://learn.microsoft.com/zh-cn/windows/win32/inputdev/keyboard-input-notifications
         private const int WM_KEYDOWN = 0x0100;
@@ -243,13 +257,22 @@ namespace WindowsAPI
         private const int WM_RBUTTONUP = 0x0205;
         private const int WM_XBUTTONDOWN = 0x020B;
         private const int WM_XBUTTONUP = 0x020C;
+        private const int WM_MOUSEMOVE = 0x0200;
+        private const int WM_MOUSEWHEEL = 0x020A;
+
+        /*private const int MK_LBUTTON = 0x0001;
+        private const int MK_MBUTTON = 0x0010;
+        private const int MK_RBUTTON = 0x0002;
+        private const int MK_XBUTTON1 = 0x0020;
+        private const int MK_XBUTTON2 = 0x0040;*/
 
         public enum MouseAction
         {
-            MouseDown, MouseUp
+            MouseDown, MouseUp,MouseMove,MouseWheel
         }
         public enum MouseButton
         {
+            none=-1,
             LButton=Keys.LButton, MButton=Keys.MButton, RButton=Keys.RButton, XButton1=Keys.XButton1, XButton2=Keys.XButton2
         }
         /// <summary>
@@ -258,48 +281,91 @@ namespace WindowsAPI
         /// <param name="button">将发送的鼠标按键</param>
         /// <param name="action">行动方法</param>
         /// <param name="hWnd">目标句柄</param>
+        /// <param name="pos">鼠标执行的坐标值</param>
+        /// <param name="wheelValue">执行鼠标滚轮操作的距离值</param>
         /// <returns>返回int值<br/>
         /// 0: 执行成功
         /// 1: 未找到指定窗口
         /// 2: 错误
         /// </returns>
-        public static int SendAction(MouseButton button, MouseAction action, IntPtr hWnd)
+        public static int SendAction(MouseButton button, MouseAction action, IntPtr hWnd,Point? pos=null,int? wheelValue=null)
         {
             try
             {
                 if (hWnd != IntPtr.Zero)
                 {
-                    int actionValue = button switch
-                    {
-                        MouseButton.LButton => WM_LBUTTONDOWN,
-                        MouseButton.RButton => WM_RBUTTONDOWN,
-                        MouseButton.MButton => WM_MBUTTONDOWN,
-                        MouseButton.XButton1 => WM_XBUTTONDOWN,
-                        MouseButton.XButton2 => WM_XBUTTONDOWN,
-                        _ => throw new NotImplementedException()
-                    };//根据按键进行赋值
-                    switch (action)//判断操作方式
+                    int actionValue=-1;
+                    int wParam = 0;
+
+                    switch (action)
                     {
                         case MouseAction.MouseDown:
-                            break;
                         case MouseAction.MouseUp:
-                            actionValue++;
+                            {
+                                actionValue = button switch
+                                {
+                                    MouseButton.LButton => WM_LBUTTONDOWN,
+                                    MouseButton.RButton => WM_RBUTTONDOWN,
+                                    MouseButton.MButton => WM_MBUTTONDOWN,
+                                    MouseButton.XButton1 => WM_XBUTTONDOWN,
+                                    MouseButton.XButton2 => WM_XBUTTONDOWN,
+                                    _ => throw new NotImplementedException()
+                                };//根据按键进行赋值
+                                switch (action)//判断操作方式
+                                {
+                                    case MouseAction.MouseDown:
+                                        break;
+                                    case MouseAction.MouseUp:
+                                        actionValue++;
+                                        break;
+                                }
+
+                                if (button == MouseButton.XButton1 || button == MouseButton.XButton2)//判断是否是鼠标侧键
+                                {
+                                    if (action != MouseAction.MouseMove)
+                                    {
+                                        switch (button)
+                                        {
+                                            case MouseButton.XButton1:
+                                                wParam = 0x0001; break;
+                                            case MouseButton.XButton2:
+                                                wParam = 0x0002; break;
+                                        }
+                                    }
+                                }
+                            }
+                            break;  
+                            case MouseAction.MouseMove:
+                            {
+                                actionValue = WM_MOUSEMOVE;
+                                /*if (button != MouseButton.none)
+                                    wParam = button switch
+                                    {
+                                        MouseButton.LButton=>MK_LBUTTON,
+                                        MouseButton.RButton => MK_RBUTTON,
+                                        MouseButton.MButton => MK_MBUTTON,
+                                        MouseButton.XButton1=> MK_XBUTTON1,
+                                        MouseButton.XButton2=> MK_XBUTTON2,
+                                        _ => throw new NotImplementedException()
+                                    };*/
+                            }
+                            break;
+                        case MouseAction.MouseWheel:
+                            actionValue = WM_MOUSEWHEEL;
+                            if (wheelValue != null)
+                                wParam = (int)MakeLParam(0, (int)wheelValue);
+                            else throw new NotImplementedException();
+/*
+lParam
+低序字指定指针相对于屏幕左上角的 x 坐标。
+高序字指定指针相对于屏幕左上角的 y 坐标。
+*/
                             break;
                     }
+                    if (actionValue == -1) throw new Exception();
 
-                    int wParam = 0;
-                    if (button == MouseButton.XButton1 || button == MouseButton.XButton2)//判断是否是鼠标侧键
-                    {
-                        switch (button)
-                        {
-                            case MouseButton.XButton1:
-                                wParam = 0x0001; break;
-                            case MouseButton.XButton2:
-                                wParam = 0x0002; break;
-                        }
-                    }
-
-                    SendMessage(hWnd, actionValue, wParam, 0);
+                    if(pos==null) pos=new Point(0,0);
+                    SendMessage(hWnd, actionValue, wParam, (int)MakeLParam(pos.Value.X,pos.Value.Y));
                     return 0;
                 }
                 else return 1;
@@ -363,5 +429,21 @@ namespace WindowsAPI
             }
             catch { return 2; }
         }
+    }
+
+    public static class HotKey
+    {
+        public enum FsModifiers{
+            MOD_NONE=0x0000,
+            MOD_ALT=0x0001,
+            MOD_CONTROL=0x0002,
+            MOD_NOREPEAT=0x4000,
+            MOD_SHIFT=0x0004,
+            MOD_WIN=0x0008
+        }
+        [DllImport("user32.dll")]
+        public static extern bool RegisterHotKey(IntPtr hWnd,int id, FsModifiers fsModifiers, Keys vk );
+        [DllImport("user32.dll")]
+        public static extern bool UnregisterHotKey(IntPtr hWnd,int id);
     }
 }

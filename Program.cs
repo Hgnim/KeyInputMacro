@@ -6,7 +6,7 @@ namespace KeyInputMacro
 {
     internal static class Program
     {
-        public const string version = "1.0.1.20241025";
+        public const string version = "1.1.1.20241102";
 
        internal static string[]? programArgs;        
         /// <summary>

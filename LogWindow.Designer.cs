@@ -41,14 +41,14 @@
             LogList.ItemHeight = 17;
             LogList.Location = new Point(0, 0);
             LogList.Name = "LogList";
-            LogList.Size = new Size(337, 375);
+            LogList.Size = new Size(431, 375);
             LogList.TabIndex = 0;
             // 
             // LogWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(337, 375);
+            ClientSize = new Size(431, 375);
             Controls.Add(LogList);
             MaximizeBox = false;
             MinimumSize = new Size(233, 294);
@@ -56,7 +56,7 @@
             ShowIcon = false;
             Text = "按键输入宏 - 执行日志";
             FormClosing += LogWindow_FormClosing;
-            Load += LogWindow_Load;
+            Shown += LogWindow_Shown;
             ResumeLayout(false);
         }
 

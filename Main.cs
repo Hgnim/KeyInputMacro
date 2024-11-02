@@ -16,6 +16,29 @@ namespace KeyInputMacro
         {
             InitializeComponent();
         }
+
+
+        /// <summary>
+        /// 重写
+        /// </summary>
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case 0x0312://WM_HOTKEY
+                    switch (m.WParam.ToInt32())
+                    {
+                        case 0x001:
+                            if (Main_ToolStrip_Script_Run.Enabled)
+                                Main_ToolStrip_Script_Run_Click(null!, null!);
+                            else if (Main_ToolStrip_Script_Stop.Enabled)
+                                Main_ToolStrip_Script_Stop_Click(null!, null!);
+                            break;
+                    }
+                    break;
+            }
+            base.WndProc(ref m);
+        }
         private void Main_Load(object sender, EventArgs e)
         {
             Logger.LogAdd("程序启动");
@@ -23,6 +46,32 @@ namespace KeyInputMacro
             if (Program.programArgs!.Length > 0)
                 if (File.Exists(Program.programArgs[0]))
                     OpenFileToScriptEditBox(Program.programArgs[0]);
+
+            if (!HotKey.RegisterHotKey(Handle, 0x001, HotKey.FsModifiers.MOD_CONTROL, Keys.OemPipe))
+                MessageBox.Show("错误: 快捷键存在冲突", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        private void Main_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            HotKey.UnregisterHotKey(Handle, 0x001);
+        }
+        private void Main_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.O)
+            {
+                Main_ToolStrip_Script_Open_Click(null!, null!);
+            }
+            else if(e.Control && e.KeyCode == Keys.S)
+            {
+                Main_ToolStrip_Script_SaveAs_Click(null!, null!);
+            }
+            else if (e.Control && e.KeyCode == Keys.N)
+            {
+                Main_ToolStrip_Script_New_Click(null!, null!);
+            }
+            else if(e.Control && e.KeyCode == Keys.F)
+            {
+                Main_ToolStrip_Edit_Format_Click(null!, null!);
+            }
         }
 
         IReadOnlyList<WindowInfo>? windowsList;
@@ -238,6 +287,70 @@ over:;
             /// 主要目标句柄
             /// </summary>
             public IntPtr mainTarget;
+            /// <summary>
+            /// 执行按键操作
+            /// </summary>
+            /// <param name="actionType">按键操作类型</param>
+            /// <param name="keyStr">按键ID</param>
+            /// <param name="keyType">按键类型</param>
+            /// <param name="intervalStr">press类型的等待时间</param>
+            /// <param name="mousePos">鼠标进行操作的位置坐标</param>
+            private readonly void KeyActionRun(string actionType, string keyStr, string keyType, string intervalStr = "", string mousePos = "")
+            {
+                Keys keyCode = (Keys)Enum.Parse(typeof(Keys), keyStr.ToLower(), true);
+                int interval = 100;//按下和抬起的间隔时间
+                {
+                    string GetIntervalTime = intervalStr;
+                    if (GetIntervalTime != "")
+                        interval = int.Parse(GetIntervalTime);
+                }
+
+                if (keyType.ToLower() == "key" || keyType == "") //(keyCode.ToString().ToLower().IndexOf("button") == -1)
+                {
+                    if (actionType == "up") goto keyUp;
+                    KeyInput.SendAction(keyCode, KeyInput.KeyAction.KeyDown, mainTarget);
+                    if (actionType == "down") goto keyActionOver;
+                    Thread.Sleep(interval);
+keyUp:;
+                    KeyInput.SendAction(keyCode, KeyInput.KeyAction.KeyUp, mainTarget);
+keyActionOver:;
+                }
+                else if (keyType.ToLower() == "mouse")//判断是否为鼠标按键，如果是鼠标按键则另外执行
+                {
+                    Point mousePosPoint;
+                    if (mousePos == "") mousePosPoint = new(0, 0);
+                    else mousePosPoint = new(int.Parse(mousePos.Split(',')[0]), int.Parse(mousePos.Split(',')[1]));
+
+                    if (actionType == "up") goto mouseUp;
+                    KeyInput.SendAction((KeyInput.MouseButton)keyCode, KeyInput.MouseAction.MouseDown, mainTarget, mousePosPoint);
+                    if (actionType == "down") goto mouseActionOver;
+                    Thread.Sleep(interval);
+mouseUp:;
+                    KeyInput.SendAction((KeyInput.MouseButton)keyCode, KeyInput.MouseAction.MouseUp, mainTarget, mousePosPoint);
+mouseActionOver:;
+                }
+
+                Thread logT = new(() =>
+                {
+                    string logStr = "";
+                    logStr += "执行按键";
+                    switch (actionType)
+                    {
+                        case "press":
+                            logStr += "按压"; break;
+                        case "down":
+                            logStr += "按下"; break;
+                        case "up":
+                            logStr += "抬起"; break;
+                    }
+                    logStr += $"。按键: {keyCode}";
+                    if (actionType == "press")
+                        logStr += $"; 间隔时间: {interval}ms";
+                    if (keyType == "mouse" && mousePos != "")
+                        logStr += $"; 位置: [x: {mousePos.Split(',')[0]}; y: {int.Parse(mousePos.Split(',')[1])}]";
+                    Logger.LogAdd(logStr);
+                }); logT.Start();
+            }
             public void Run(XmlNodeList xmlNL)
             {
                 foreach (XmlNode xn in xmlNL)
@@ -247,53 +360,43 @@ over:;
                     switch (xmlE.Name)
                     {
                         case "press":
-                            {
-                                int interval = 100;//按下和抬起的间隔时间
-                                {
-                                    string GetIntervalTime = xmlE.GetAttribute("ms");
-                                    if (GetIntervalTime != "")
-                                        interval = int.Parse(GetIntervalTime);
-                                }
-                                Keys readKeyCode = (Keys)Enum.Parse(typeof(Keys), xmlE.GetAttribute("key").ToLower(), true);
-                                if (xmlE.GetAttribute("type").ToLower() == "key" || xmlE.GetAttribute("type") == "") //(readKeyCode.ToString().ToLower().IndexOf("button") == -1)
-                                {
-                                    KeyInput.SendAction(readKeyCode, KeyInput.KeyAction.KeyDown, mainTarget);
-                                    Thread.Sleep(interval);
-                                    KeyInput.SendAction(readKeyCode, KeyInput.KeyAction.KeyUp, mainTarget);
-                                }
-                                else if (xmlE.GetAttribute("type").ToLower() == "mouse")//判断是否为鼠标按键，如果是鼠标按键则另外执行
-                                {
-                                    KeyInput.SendAction((KeyInput.MouseButton)readKeyCode, KeyInput.MouseAction.MouseDown, mainTarget);
-                                    Thread.Sleep(interval);
-                                    KeyInput.SendAction((KeyInput.MouseButton)readKeyCode, KeyInput.MouseAction.MouseUp, mainTarget);
-                                }
-                                Logger.LogAdd($"执行按键按压。按键: {readKeyCode}; 间隔时间: {interval}ms");
-                            }
+                            KeyActionRun(xmlE.Name, xmlE.GetAttribute("key"), xmlE.GetAttribute("type"), xmlE.GetAttribute("ms"), xmlE.GetAttribute("mouse_pos"));
                             break;
                         case "down":
+                        case "up":
+                            KeyActionRun(xmlE.Name, xmlE.GetAttribute("key"), xmlE.GetAttribute("type"), mousePos: xmlE.GetAttribute("mouse_pos"));
+                            break;
+                        case "mouse_move":
                             {
-                                Keys readKeyCode = (Keys)Enum.Parse(typeof(Keys), xmlE.GetAttribute("key").ToLower(), true);
-                                if (xmlE.GetAttribute("type").ToLower() == "key" || xmlE.GetAttribute("type") == "") //(readKeyCode.ToString().ToLower().IndexOf("button") == -1)
-                                    KeyInput.SendAction(readKeyCode, KeyInput.KeyAction.KeyDown, mainTarget);
-                                else if (xmlE.GetAttribute("type").ToLower() == "mouse")
-                                    KeyInput.SendAction((KeyInput.MouseButton)readKeyCode, KeyInput.MouseAction.MouseDown, mainTarget);
-                                Logger.LogAdd($"执行按键按下。按键: {readKeyCode}");
+                                string posStr = xmlE.GetAttribute("pos");
+                                /*string keyStr = xmlE.GetAttribute("key").ToLower();*/
+                                Point pos = new(int.Parse(posStr.Split(',')[0]), int.Parse(posStr.Split(',')[1]));
+                                KeyInput.MouseButton inputMouseButton = KeyInput.MouseButton.none;
+                                /*if (keyStr != "") 
+                                    inputMouseButton = (KeyInput.MouseButton)Enum.Parse(typeof(Keys),keyStr, true); */
+
+                                KeyInput.SendAction(inputMouseButton, KeyInput.MouseAction.MouseMove, mainTarget, pos);
+                                Logger.LogAdd($"执行鼠标移动。位置: [x: {pos.X}; y: {pos.Y}]");
                             }
                             break;
-                        case "up":
+                        case "mouse_wheel":
                             {
-                                Keys readKeyCode = (Keys)Enum.Parse(typeof(Keys), xmlE.GetAttribute("key").ToLower(), true);
-                                if (xmlE.GetAttribute("type").ToLower() == "key" || xmlE.GetAttribute("type") == "")
-                                    KeyInput.SendAction(readKeyCode, KeyInput.KeyAction.KeyUp, mainTarget);
-                                else if (xmlE.GetAttribute("type").ToLower() == "mouse")
-                                    KeyInput.SendAction((KeyInput.MouseButton)readKeyCode, KeyInput.MouseAction.MouseUp, mainTarget);
-                                Logger.LogAdd($"执行按键抬起。按键: {readKeyCode}");
+                                string wheelValue = xmlE.GetAttribute("wheel");
+                                string posStr = xmlE.GetAttribute("pos");
+                                Point pos;
+                                if (posStr == "")
+                                    pos = new(0, 0);
+                                else
+                                    pos = new(int.Parse(posStr.Split(',')[0]), int.Parse(posStr.Split(',')[1]));
+                                KeyInput.SendAction(KeyInput.MouseButton.none, KeyInput.MouseAction.MouseWheel, mainTarget, pos, int.Parse(wheelValue));
+                                Logger.LogAdd($"执行鼠标滚轮滚动。距离: {wheelValue}; 位置: [x: {pos.X}; y: {pos.Y}]");
                             }
                             break;
                         case "text":
                             {
-                                KeyInput.SendAction(xmlE.GetAttribute("txt"), mainTarget);
-                                Logger.LogAdd($"执行输入文本。文本内容: {xmlE.GetAttribute("txt")}");
+                                string targetText = xmlE.GetAttribute("txt");
+                                KeyInput.SendAction(targetText, mainTarget);
+                                Logger.LogAdd($"执行输入文本。文本内容: {targetText}");
                             }
                             break;
                         case "loop":
@@ -446,5 +549,7 @@ Github: https://github.com/Hgnim/KeyInputMacro",
         {
             System.Diagnostics.Process.Start("explorer.exe", "https://github.com/Hgnim/KeyInputMacro/wiki/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3");
         }
+
+
     }
 }

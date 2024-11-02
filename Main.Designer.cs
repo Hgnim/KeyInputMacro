@@ -177,33 +177,37 @@ namespace KeyInputMacro
             // Main_ToolStrip_Script_New
             // 
             Main_ToolStrip_Script_New.Name = "Main_ToolStrip_Script_New";
-            Main_ToolStrip_Script_New.Size = new Size(112, 22);
+            Main_ToolStrip_Script_New.ShortcutKeyDisplayString = "Ctrl+N";
+            Main_ToolStrip_Script_New.Size = new Size(180, 22);
             Main_ToolStrip_Script_New.Text = "新建";
             Main_ToolStrip_Script_New.Click += Main_ToolStrip_Script_New_Click;
             // 
             // Main_ToolStrip_Script_Open
             // 
             Main_ToolStrip_Script_Open.Name = "Main_ToolStrip_Script_Open";
-            Main_ToolStrip_Script_Open.Size = new Size(112, 22);
+            Main_ToolStrip_Script_Open.ShortcutKeyDisplayString = "Ctrl+O";
+            Main_ToolStrip_Script_Open.Size = new Size(180, 22);
             Main_ToolStrip_Script_Open.Text = "打开";
             Main_ToolStrip_Script_Open.Click += Main_ToolStrip_Script_Open_Click;
             // 
             // Main_ToolStrip_Script_SaveAs
             // 
             Main_ToolStrip_Script_SaveAs.Name = "Main_ToolStrip_Script_SaveAs";
-            Main_ToolStrip_Script_SaveAs.Size = new Size(112, 22);
+            Main_ToolStrip_Script_SaveAs.ShortcutKeyDisplayString = "Ctrl+S";
+            Main_ToolStrip_Script_SaveAs.Size = new Size(180, 22);
             Main_ToolStrip_Script_SaveAs.Text = "另存为";
             Main_ToolStrip_Script_SaveAs.Click += Main_ToolStrip_Script_SaveAs_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(109, 6);
+            toolStripMenuItem1.Size = new Size(177, 6);
             // 
             // Main_ToolStrip_Script_Run
             // 
             Main_ToolStrip_Script_Run.Name = "Main_ToolStrip_Script_Run";
-            Main_ToolStrip_Script_Run.Size = new Size(112, 22);
+            Main_ToolStrip_Script_Run.ShortcutKeyDisplayString = "Ctrl+\\";
+            Main_ToolStrip_Script_Run.Size = new Size(180, 22);
             Main_ToolStrip_Script_Run.Text = "运行";
             Main_ToolStrip_Script_Run.Click += Main_ToolStrip_Script_Run_Click;
             // 
@@ -211,7 +215,8 @@ namespace KeyInputMacro
             // 
             Main_ToolStrip_Script_Stop.Enabled = false;
             Main_ToolStrip_Script_Stop.Name = "Main_ToolStrip_Script_Stop";
-            Main_ToolStrip_Script_Stop.Size = new Size(112, 22);
+            Main_ToolStrip_Script_Stop.ShortcutKeyDisplayString = "Ctrl+\\";
+            Main_ToolStrip_Script_Stop.Size = new Size(180, 22);
             Main_ToolStrip_Script_Stop.Text = "停止";
             Main_ToolStrip_Script_Stop.Click += Main_ToolStrip_Script_Stop_Click;
             // 
@@ -233,7 +238,8 @@ namespace KeyInputMacro
             // Main_ToolStrip_Edit_Format
             // 
             Main_ToolStrip_Edit_Format.Name = "Main_ToolStrip_Edit_Format";
-            Main_ToolStrip_Edit_Format.Size = new Size(136, 22);
+            Main_ToolStrip_Edit_Format.ShortcutKeyDisplayString = "Ctrl+F";
+            Main_ToolStrip_Edit_Format.Size = new Size(180, 22);
             Main_ToolStrip_Edit_Format.Text = "格式化文本";
             Main_ToolStrip_Edit_Format.Click += Main_ToolStrip_Edit_Format_Click;
             // 
@@ -255,14 +261,14 @@ namespace KeyInputMacro
             // Main_ToolStrip_help_helpDoc
             // 
             Main_ToolStrip_help_helpDoc.Name = "Main_ToolStrip_help_helpDoc";
-            Main_ToolStrip_help_helpDoc.Size = new Size(124, 22);
+            Main_ToolStrip_help_helpDoc.Size = new Size(180, 22);
             Main_ToolStrip_help_helpDoc.Text = "帮助文档";
             Main_ToolStrip_help_helpDoc.Click += Main_ToolStrip_help_helpDoc_Click;
             // 
             // Main_ToolStrip_help_about
             // 
             Main_ToolStrip_help_about.Name = "Main_ToolStrip_help_about";
-            Main_ToolStrip_help_about.Size = new Size(124, 22);
+            Main_ToolStrip_help_about.Size = new Size(180, 22);
             Main_ToolStrip_help_about.Text = "关于";
             Main_ToolStrip_help_about.Click += Main_ToolStrip_help_about_Click;
             // 
@@ -304,11 +310,14 @@ namespace KeyInputMacro
             Controls.Add(Root_SplitContainer);
             Controls.Add(Main_ToolStrip);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
             MainMenuStrip = Main_ToolStrip;
             MinimumSize = new Size(288, 444);
             Name = "Main";
             Text = "按键输入宏";
+            FormClosed += Main_FormClosed;
             Load += Main_Load;
+            KeyDown += Main_KeyDown;
             GetWindows_GroupBox.ResumeLayout(false);
             ParentObjListAndSubObjList_SplitContainer.Panel1.ResumeLayout(false);
             ParentObjListAndSubObjList_SplitContainer.Panel2.ResumeLayout(false);

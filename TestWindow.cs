@@ -43,13 +43,24 @@ namespace KeyInputMacro
 
         private void OutputBox_MouseDown(object sender, MouseEventArgs e)
         {
-            OutputBox.Items.Add(GetNowTime() + "检测到鼠标\"" + e.Button.ToString() + "\"按下");
+            OutputBox.Items.Add($"{GetNowTime()}检测到鼠标\"{e.Button}\"按下，位置: [x: {e.X}, y: {e.Y}]");
             OutputBoxAutoScroll();
         }
 
         private void OutputBox_MouseUp(object sender, MouseEventArgs e)
         {
-            OutputBox.Items.Add(GetNowTime() + "检测到鼠标\"" + e.Button.ToString() + "\"弹起");
+            OutputBox.Items.Add($"{GetNowTime()}检测到鼠标\"{e.Button}\"弹起，位置: [x: {e.X}, y: {e.Y}]");
+            OutputBoxAutoScroll();
+        }
+
+        private void OutputBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            OutputBox.Items.Add($"{GetNowTime()}检测到鼠标\"{e.Button}\"移动，位置: [x: {e.X}, y: {e.Y}]");
+            OutputBoxAutoScroll();
+        }
+        private void OutputBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            OutputBox.Items.Add($"{GetNowTime()}检测到鼠标滚动，距离: {e.Delta}; 位置: [x: {e.X}, y: {e.Y}]");
             OutputBoxAutoScroll();
         }
 
@@ -73,5 +84,50 @@ namespace KeyInputMacro
         {
             OutputBox_KeyUp(sender, e);
         }
+
+        private void TestWindow_MouseMove(object sender, MouseEventArgs e)
+        {
+            OutputBox_MouseMove(sender, e);
+        }
+        private void TestWindow_MouseWheel(object sender, MouseEventArgs e)
+        {
+            OutputBox_MouseWheel(sender, e);
+        }
+
+        private void MainMenuStrip_Options_MouseMoveCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            switch (MainMenuStrip_Options_MouseMoveCheck.Checked)
+            {
+                case true:
+                    this.MouseMove += TestWindow_MouseMove!;
+                    OutputBox.MouseMove += OutputBox_MouseMove!;
+                    break;
+                case false:
+                    this.MouseMove -= TestWindow_MouseMove!;
+                    OutputBox.MouseMove -= OutputBox_MouseMove!;
+                    break;
+            }
+        }
+        private void MainMenuStrip_Options_MouseWheelCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            switch (MainMenuStrip_Options_MouseWheelCheck.Checked)
+            {
+                case true:
+                    this.MouseWheel += TestWindow_MouseWheel!;
+                    OutputBox.MouseWheel += OutputBox_MouseWheel!;
+                    break;
+                case false:
+                    this.MouseWheel -= TestWindow_MouseWheel!;
+                    OutputBox.MouseWheel -= OutputBox_MouseWheel!;
+                    break;
+            }
+        }
+
+        private void MainMenuStrip_Clear_Click(object sender, EventArgs e)
+        {
+            OutputBox.Items.Clear();
+        }
+
+
     }
 }
