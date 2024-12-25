@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>KeyInputMacro_icon.ico</ApplicationIcon>
+
+	  <Title>按键输入宏</Title>
+	  <Company>Hgnim</Company>
+	  <Product>KeyInputMacro</Product>
+	  <Description>按键输入宏</Description>
+	  <Copyright>Copyright (C) 2024 Hgnim, All rights reserved.</Copyright>
+	  <AssemblyName>按键输入宏</AssemblyName>
+	  <AssemblyVersion>1.1.1.1102</AssemblyVersion>
+	  <FileVersion>1.1.1.1102</FileVersion>
+	  <Version>1.1.1.20241102</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="KeyInputMacro_icon.ico" />
+  </ItemGroup>
+
+</Project>
